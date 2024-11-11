@@ -1,5 +1,5 @@
 class Boid {
-    constructor(x, y, maxSpeed = 5, color = 'white', mass = 10, density = 1) {
+    constructor(x, y, maxSpeed = 5, color = "white", mass = 10, density = 1) {
         this.position = createVector(x, y);
         this.velocity = p5.Vector.random2D();
         this.velocity.setMag(random(1, 2));
@@ -7,7 +7,7 @@ class Boid {
 
         this.maxSpeed = maxSpeed;
         this.maxForce = 0.5;
-        this.perceptionRadius = 100;
+        this.perception_radius = 100;
         this.wanderAngle = 0;
         this.currentMarker = 0;
 
@@ -31,21 +31,20 @@ class Boid {
         line(start.x, start.y, start.x + vector.x, start.y + vector.y);
     }
 
-
     arriveAcceleration(target) {
         let vicinity = 100;
         let threshold = 0.1;
         let desire = p5.Vector.sub(target, this.position);
 
         let d = desire.mag();
-        let factor = (d < vicinity) ? d < threshold ? 0 : d / vicinity : 1;  
+        let factor = d < vicinity ? (d < threshold ? 0 : d / vicinity) : 1;
         desire.setMag(this.maxSpeed * factor);
         let followForce = p5.Vector.sub(desire, this.velocity);
         return followForce.div(this.mass);
     }
 
     arrive(target) {
-        this.acceleration.add(this.arriveAcceleration(target))
+        this.acceleration.add(this.arriveAcceleration(target));
     }
 
     seekAcceleration(target) {
@@ -58,7 +57,7 @@ class Boid {
 
     seek(target) {
         //target is a p5 vector instance
-        this.acceleration.add(this.seekAcceleration(target))
+        this.acceleration.add(this.seekAcceleration(target));
     }
 
     fleeAcceleration(monster) {
@@ -66,18 +65,16 @@ class Boid {
         let vicinity = 200;
         let repulse = p5.Vector.sub(this.position, monster);
         let d = repulse.mag();
-        let factor = (d < vicinity) ? (d / vicinity) : 1;
-        repulse.setMag(this.maxSpeed  / (factor * 10));
+        let factor = d < vicinity ? d / vicinity : 1;
+        repulse.setMag(this.maxSpeed / (factor * 10));
         let fleeForce = p5.Vector.sub(repulse, this.velocity);
         return fleeForce.div(this.mass);
     }
 
     flee(monster) {
         //monster is a p5 vector instance
-        this.acceleration.add(this.fleeAcceleration(monster))
+        this.acceleration.add(this.fleeAcceleration(monster));
     }
-
-
 
     wanderAcceleration() {
         //Change these const variables to change the wandering behaviours
@@ -94,7 +91,7 @@ class Boid {
     }
 
     wander() {
-        this.acceleration.add(this.wanderAcceleration())
+        this.acceleration.add(this.wanderAcceleration());
     }
 
     predictPosition(entity, predictionTime) {
@@ -104,7 +101,13 @@ class Boid {
     }
 
     pursueAcceleration(target) {
-        let predictionTime = dist(this.position.x, this.position.y, target.position.x, target.position.y) / this.maxSpeed;
+        let predictionTime =
+            dist(
+                this.position.x,
+                this.position.y,
+                target.position.x,
+                target.position.y
+            ) / this.maxSpeed;
         let predictedPosition = this.predictPosition(target, predictionTime);
 
         return this.seekAcceleration(predictedPosition);
@@ -117,7 +120,13 @@ class Boid {
 
     evadeAcceleration(enemy) {
         // Enemy is an object of boid instance
-        let predictionTime = dist(this.position.x, this.position.y, enemy.position.x, enemy.position.y) / this.maxSpeed;
+        let predictionTime =
+            dist(
+                this.position.x,
+                this.position.y,
+                enemy.position.x,
+                enemy.position.y
+            ) / this.maxSpeed;
         let predictedPosition = this.predictPosition(enemy, predictionTime);
 
         return this.fleeAcceleration(predictedPosition);
@@ -127,18 +136,15 @@ class Boid {
         this.acceleration.add(this.evadeAcceleration(enemy));
     }
 
-    align(boids) {
+    align(nearby_boids) {
         let total = 0;
         let alignment = createVector();
-        for (let boid of boids) {
+        for (let boid of nearby_boids) {
             if (boid == this) {
                 continue;
             }
-            let distance = dist(this.position.x, this.position.y, boid.position.x, boid.position.y);
-            if (distance <= this.perceptionRadius) {
-                alignment.add(boid.velocity);
-                total++;
-            }
+            alignment.add(boid.velocity);
+            total++;
         }
         if (total != 0) {
             alignment.div(total);
@@ -150,19 +156,16 @@ class Boid {
         return alignment;
     }
 
-    cohere(boids) {
+    cohere(nearby_boids) {
         let total = 0;
         let cohesion = createVector();
-        for (let boid of boids) {
+        for (let boid of nearby_boids) {
             if (boid == this) {
                 continue;
             }
 
-            let distance = dist(this.position.x, this.position.y, boid.position.x, boid.position.y);
-            if (distance <= this.perceptionRadius) {
-                cohesion.add(boid.position);
-                total++;
-            }
+            cohesion.add(boid.position);
+            total++;
         }
         if (total > 0) {
             cohesion.div(total);
@@ -175,19 +178,17 @@ class Boid {
         return cohesion;
     }
 
-    seperate(boids) {
+    seperate(nearby_boids) {
         let total = 0;
         let seperation = createVector();
-        for (let boid of boids) {
+        for (let boid of nearby_boids) {
             if (boid == this) {
                 continue;
             }
             let distance = dist(this.position.x, this.position.y, boid.position.x, boid.position.y);
-            if (distance < this.perceptionRadius) {
-                let repulse = p5.Vector.sub(this.position, boid.position).div(distance * distance);
-                seperation.add(repulse);
-                total++;
-            }
+            let repulse = p5.Vector.sub(this.position, boid.position).div(distance * distance);
+            seperation.add(repulse);
+            total++;
         }
 
         if (total > 0) {
@@ -200,10 +201,11 @@ class Boid {
         return seperation;
     }
 
-    flockWith(boids) {
-        let alignment = this.align(boids);
-        let cohesion = this.cohere(boids);
-        let seperation = this.seperate(boids);
+    flockWith(nearby_boids) {
+        
+        let alignment = this.align(nearby_boids);
+        let cohesion = this.cohere(nearby_boids);
+        let seperation = this.seperate(nearby_boids);
 
         this.acceleration.add(alignment);
         this.acceleration.add(cohesion);
@@ -216,14 +218,14 @@ class Boid {
 
         let targetMarker = path.markers[this.currentMarker];
         let d = p5.Vector.sub(targetMarker.position, this.position).mag(); //distance from boid to target
-        
+
         //!the 0.8 here
-        if (d < targetMarker.radius) this.currentMarker = (this.currentMarker + 1) % n;
+        if (d < targetMarker.radius)
+            this.currentMarker = (this.currentMarker + 1) % n;
 
         let target = targetMarker.position;
         this.seek(target);
     }
-
 
     update() {
         this.position.add(this.velocity);
@@ -240,7 +242,34 @@ class Boid {
             translate(this.position.x, this.position.y);
             let angle = this.velocity.heading();
             rotate(angle);
-            triangle(-this.radius, this.radius / 2, -this.radius, -this.radius / 2, this.radius, 0);
+            triangle(
+                -this.radius,
+                this.radius / 2,
+                -this.radius,
+                -this.radius / 2,
+                this.radius,
+                0
+            );
+        }
+        pop();
+    }
+
+    show_with_color(color) {
+        noStroke();
+        push();
+        {
+            fill(color);
+            translate(this.position.x, this.position.y);
+            let angle = this.velocity.heading();
+            rotate(angle);
+            triangle(
+                -this.radius,
+                this.radius / 2,
+                -this.radius,
+                -this.radius / 2,
+                this.radius,
+                0
+            );
         }
         pop();
     }

@@ -1,0 +1,2 @@
+- performance increased after using quadtree
+- fps still low when boids are climped up together. Maybe it is there are a lot of neighbours in the radius and the performance is close to O(n^2)
