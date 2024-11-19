@@ -186,7 +186,7 @@ class Boid {
                 continue;
             }
             let distance = dist(this.position.x, this.position.y, boid.position.x, boid.position.y);
-            let repulse = p5.Vector.sub(this.position, boid.position).div(distance * distance);
+            let repulse = p5.Vector.sub(this.position, boid.position).div(distance * distance * 0.2);
             seperation.add(repulse);
             total++;
         }
